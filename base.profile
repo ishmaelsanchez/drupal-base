@@ -15,7 +15,7 @@ function system_form_install_select_profile_form_alter(&$form, $form_state) {
  *
  * Allows the profile to alter the site configuration form.
  */
-function baseform_install_configure_form_alter(&$form, $form_state) {
+function base_form_install_configure_form_alter(&$form, $form_state) {
   // Pre-populate the site name and email address.
   $form['site_information']['site_name']['#default_value'] = $_SERVER['SERVER_NAME'];
   $form['site_information']['site_mail']['#default_value'] = 'support@ninjitsuweb.com';
@@ -42,9 +42,9 @@ function baseform_install_configure_form_alter(&$form, $form_state) {
  * 
  * Adds on to the install process
  */
-function baseinstall_tasks() {
+function base_install_tasks() {
   $tasks = array(
-    'baseclient_form' => array(
+    'base_client_form' => array(
       'display_name' => st('Setup Client'),
       'type' => 'form',
     ),
@@ -55,7 +55,7 @@ function baseinstall_tasks() {
 /** 
  * Custom form for additional configuration
  */
-function baseclient_form() {
+function base_client_form() {
   $form = array();
   $form['intro'] = array(
     '#markup' => '<p>' . st('Setup your default client account below.') . '</p>',
@@ -85,13 +85,13 @@ function baseclient_form() {
  * Form validation
  * 
  */
-function baseclient_form_validate($form, &$form_state) {
+function base_client_form_validate($form, &$form_state) {
   if (!valid_email_address($form_state['values']['client_mail'])) {
     form_set_error('client_mail', st('Please enter a valid email address'));
   }
 }
 
-function baseclient_form_submit($form, &$form_state) {
+function base_client_form_submit($form, &$form_state) {
   $values = $form_state['values'];
 
   // Setup the user account array to programatically create a new user.
