@@ -15,18 +15,17 @@ function system_form_install_select_profile_form_alter(&$form, $form_state) {
  *
  * Allows the profile to alter the site configuration form.
  */
-function base_form_install_configure_form_alter(&$form, $form_state) {
+function givecamp_form_install_configure_form_alter(&$form, $form_state) {
   // Pre-populate the site name and email address.
   $form['site_information']['site_name']['#default_value'] = $_SERVER['SERVER_NAME'];
   $form['site_information']['site_mail']['#default_value'] = 'no-reply@example.com';
 
   // Account information defaults
-  $form['admin_account']['account']['name']['#default_value'] = $_SERVER['SERVER_NAME'] . 'admin';
+  $form['admin_account']['account']['name']['#default_value'] = 'Givecamp-admin';
   $form['admin_account']['account']['mail']['#default_value'] = 'no-reply@example.com';
   
   // Date/time settings
   $form['server_settings']['site_default_country']['#default_value'] = 'US';
-  $form['server_settings']['date_default_timezone']['#default_value'] = 'America/Los Angeles';
   
   // Many modules set messages during installation we reset them
   drupal_get_messages('status');
@@ -42,20 +41,20 @@ function base_form_install_configure_form_alter(&$form, $form_state) {
  * 
  * Adds on to the install process
  */
-function base_install_tasks() {
+/*function givecamp_install_tasks() {
   $tasks = array(
-    'base_client_form' => array(
+    'givecamp_client_form' => array(
       'display_name' => st('Setup Client'),
       'type' => 'form',
     ),
   );
   return $tasks;
-}
+}*/
 
 /** 
  * Custom form for additional configuration
  */
-function base_client_form() {
+/*function givecamp_client_form() {
   $form = array();
   $form['intro'] = array(
     '#markup' => '<p>' . st('Setup your default client account below.') . '</p>',
@@ -79,19 +78,19 @@ function base_client_form() {
     '#value' => st('Continue'),
   );
   return $form;
-}
+}*/
 
 /**
  * Form validation
  * 
  */
-function base_client_form_validate($form, &$form_state) {
+/*function givecamp_client_form_validate($form, &$form_state) {
   if (!valid_email_address($form_state['values']['client_mail'])) {
     form_set_error('client_mail', st('Please enter a valid email address'));
   }
-}
+}*/
 
-function base_client_form_submit($form, &$form_state) {
+/*function givecamp_client_form_submit($form, &$form_state) {
   $values = $form_state['values'];
 
   // Setup the user account array to programatically create a new user.
@@ -113,4 +112,4 @@ function base_client_form_submit($form, &$form_state) {
   // For good measure
   drupal_flush_all_caches();
   drupal_cron_run();
-}
+}*/
