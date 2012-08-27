@@ -1,0 +1,612 @@
+<?php
+
+/**
+ * Implements hook_install().
+ *
+ * Perform actions to set up the site for this profile.
+ */
+function base_install() {
+  base_set_vars();
+  base_set_text_formats();
+  base_set_fields_types();
+  base_set_perm_roles();
+  base_set_blocks();
+}
+
+/**
+ * Defines variables for nodes and contrib modules
+ */
+function base_set_vars() {
+  // Default page not promoted and comments disabled.
+  variable_set('node_options_page', array('status'));
+  variable_set('comment_page', COMMENT_NODE_HIDDEN);
+  
+  // Block and webform content not promoted and comments disabled.
+  variable_set('node_options_block', array('status'));
+  variable_set('comment_block', COMMENT_NODE_HIDDEN);
+  variable_set('comment_webform', COMMENT_NODE_HIDDEN);
+
+  // Default articles and webforms not promoted
+  variable_set('node_options_article', array('status'));
+  variable_set('node_options_webform', array('status'));
+  
+  // Don't display date and author information page, block, webform nodes.
+  variable_set('node_submitted_page', FALSE);
+  variable_set('node_submitted_block', FALSE);
+  variable_set('node_submitted_webform', FALSE);
+
+  // Cache GA code by default
+  variable_set('googleanalytics_cache', 1);
+
+  // Disable user configurable timezones
+  variable_set('configurable_timezones', 0);
+
+  // Set pathauto defaults to node title
+  variable_set('pathauto_node_pattern', '[node:title]');
+  
+  // Set pathauto defaults for user patterns
+  variable_set('pathauto_user_pattern', 'user/[user:name]');
+  
+  // Set cron
+  variable_set('cron_safe_threshold', '43200');
+
+  // Set search engines to submit to
+  variable_set('xmlsitemap_engines_engines', array('bing', 'google'));
+
+  // Set XML sitemap minimum
+  variable_set('xmlsitemap_engines_minimum_lifetime', '604800');
+  
+  // Include pages and articles in sitemap
+  variable_set('xmlsitemap_settings_node_page', array('status' => 1, 'priority' => 0.5));
+  variable_set('xmlsitemap_settings_node_article', array('status' => 1, 'priority' => 0.5));
+  
+  // Disable user register.
+  variable_set('user_register', USER_REGISTER_ADMINISTRATORS_ONLY);
+  
+  variable_set('admin_theme', 'rubik');
+  variable_set('node_admin_theme', '1');
+  variable_set('theme_default', 'seven');
+  
+  // Add new date options to be set as vars below
+  $values = array(
+    array(
+      'format' => 'M j, Y',
+      'type'  => 'short',
+      'locked' => '0'
+    ),
+    array(
+      'format' => 'F j, Y',
+      'type' => 'medium',
+      'locked' => '0'
+    ),
+    array(
+      'format' => 'D, F j, Y',
+      'type' => 'long',
+      'locked' => '0'
+    ),
+  );
+  $query = db_insert('date_formats')->fields(array('format', 'type', 'locked'));
+  
+  foreach ($values as $record) {
+    $query->values($record);   
+  } 
+  $query->execute();
+  
+  variable_set('date_first_day', '1');
+  variable_set('date_format_long', 'D, F j, Y');
+  variable_set('date_format_medium', 'F j, Y');
+  variable_set('date_format_short', 'M j, Y');
+  
+}
+
+/**
+ * Set up user roles and permissions
+ */
+function base_set_perm_roles() {
+  
+  // MAKE Sure you aren't setting perms for disabled modules otherwise you get
+  // Integrity constraint violation: 1048 Column 'module' cannot be null
+
+
+  // Set perms for default roles
+  user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('access content', 'search content'));
+  user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, array('access content', 'search content'));
+  
+  // Create role for admins with all available permissions assigned.
+  $admin_role = new stdClass();
+  $admin_role->name = 'administrator';
+  $admin_role->weight = 4;
+  user_role_save($admin_role);
+  user_role_grant_permissions($admin_role->rid, array_keys(module_invoke_all('permission')));
+  // Set this as the admin role.
+  variable_set('user_admin_role', $admin_role->rid);
+
+  // Assign user 1 as an admin
+  db_insert('users_roles')
+    ->fields(array('uid' => 1, 'rid' => $admin_role->rid))
+    ->execute();
+  
+    // Create role for editors
+  $role = new stdClass();
+  $role->name = 'editor';
+  $role->weight = 2;
+  user_role_save($role);
+
+  $permissions = array(
+    'access administration menu',
+    'use text format filtered_html',
+    'access content overview',
+    'create article content',
+    'create block content',
+    'create page content',
+    'edit any article content',
+    'edit any page content',
+    'edit own article content',
+    'edit own block content',
+    'edit own page content',
+    'revert revisions',
+    'view own unpublished content',
+    'view revisions',
+    'view the administration theme',
+    'access own webform results',
+    'access own webform submissions',
+  );
+  user_role_grant_permissions($role->rid, $permissions);
+  
+  // Create manager role with some sensible defaults
+  $manager_role = new stdClass();
+  $manager_role->name = 'manager';
+  $manager_role->weight = 3;
+  user_role_save($manager_role);
+  
+  $permissions = array(
+    'access administration menu',
+    'use text format full_html',
+    'access content overview',
+    'create article content',
+    'create block content',
+    'create page content',
+    'edit any article content',
+    'edit any page content',
+    'edit own article content',
+    'edit own block content',
+    'edit own page content',
+    'revert revisions',
+    'view own unpublished content',
+    'view revisions',
+    'view the administration theme',
+    'access own webform results',
+    'access own webform submissions',
+    'delete own webform submissions',
+  );
+  user_role_grant_permissions($manager_role->rid, $permissions);
+  
+}
+
+function base_set_text_formats() {
+  // Add text formats.
+  $filtered_html_format = array(
+    'format' => 'filtered_html',
+    'name' => 'Filtered HTML',
+    'weight' => 1,
+    'filters' => array(
+      // URL filter.
+      'filter_url' => array(
+        'weight' => 0,
+        'status' => 1,
+      ),
+      // HTML filter.
+      'filter_html' => array(
+        'weight' => 1,
+        'status' => 1,
+      ),
+      // Line break filter.
+      'filter_autop' => array(
+        'weight' => 2,
+        'status' => 1,
+      ),
+      // HTML corrector filter.
+      'filter_htmlcorrector' => array(
+        'weight' => 10,
+        'status' => 1,
+      ),
+    ),
+  );
+  $filtered_html_format = (object) $filtered_html_format;
+  filter_format_save($filtered_html_format);
+
+  $full_html_format = array(
+    'format' => 'full_html',
+    'name' => 'Full HTML',
+    'weight' => 0,
+    'filters' => array(
+      // URL filter.
+      'filter_url' => array(
+        'weight' => 0,
+        'status' => 1,
+      ),
+      // Line break filter.
+      'filter_autop' => array(
+        'weight' => 1,
+        'status' => 1,
+      ),
+      // HTML corrector filter.
+      'filter_htmlcorrector' => array(
+        'weight' => 10,
+        'status' => 1,
+      ),
+    ),
+  );
+  $full_html_format = (object) $full_html_format;
+  filter_format_save($full_html_format);
+
+  $filtered_settings = array(
+    'default' => 1,
+    'user_choose' => 0,
+    'show_toggle' => 1,
+    'theme' => 'advanced',
+    'language' => 'en',
+    'buttons' => array(
+      'default' => array(
+        'bold' => 1,
+        'italic' => 1,
+        'justifyleft' => 1,
+        'justifycenter' => 1,
+        'justifyright' => 1,
+        'bullist' => '1',
+        'numlist' => 1,
+        'outdent' => 1,
+        'indent' => 1,
+        'blockquote' => 1,
+      ),
+    ),
+    'toolbar_loc' => 'top',
+    'toolbar_align' => 'left',
+    'path_loc' => 'bottom',
+    'resizing' => 1,
+    'verify_html' => 1,
+    'preformatted' => 0,
+    'convert_fonts_to_spans' => 1,
+    'remove_linebreaks' => 1,
+    'apply_source_formatting' => 0,
+    'paste_auto_cleanup_on_paste' => 1,
+    'block_formats' => 'p,h2,h3,h4',
+    'css_setting' => 'none',
+    'css_path' => NULL,
+    'css_classes' => NULL,
+  );
+  
+  $full_settings = array(
+    'default' => 1,
+    'user_choose' => 0,
+    'show_toggle' => 1,
+    'theme' => 'advanced',
+    'language' => 'en',
+    'buttons' => array(
+      'default' => array(
+        'bold' => 1,
+        'italic' => 1,
+        'strikethrough' => 1,
+        'justifyleft' => 1,
+        'justifycenter' => 1,
+        'justifyright' => 1,
+        'bullist' => '1',
+        'numlist' => 1,
+        'outdent' => 1,
+        'indent' => 1,
+        'undo' => 1,
+        'redo' => 1,
+        'link' => 1,
+        'unlink' => 1,
+        'image' => 1,
+        'sup' => 1,
+        'hr' => 1,
+        'cut' => 1,
+        'copy' => 1,
+        'paste' => 1,
+        'removeformat' => 1,
+        'blockquote' => 1,
+      ),
+      'advimage' => array('advimage' => 1),
+      'advlink' => array('advlink' => 1),
+      'paste' => array('pasteword' => 1, 'pastetext' => '1'),
+      'table' => array('tablecontrols' => 1),
+      'media' => array('media' => 1),
+      'xhtmlextras' => array('cite' => 1),
+      'imce' => array('imce' => 1),
+      'drupal' => array('break' => 1),
+    ),
+    'toolbar_loc' => 'top',
+    'toolbar_align' => 'left',
+    'path_loc' => 'bottom',
+    'resizing' => 1,
+    'verify_html' => 1,
+    'preformatted' => 0,
+    'convert_fonts_to_spans' => 1,
+    'remove_linebreaks' => 1,
+    'apply_source_formatting' => 0,
+    'paste_auto_cleanup_on_paste' => 1,
+    'block_formats' => 'p,h2,h3,h4',
+    'css_setting' => 'none',
+    'css_path' => NULL,
+    'css_classes' => NULL,
+  );
+  
+  $wysiwyg_config = array(
+    'full_html' => array(
+      'format' => 'full_html',
+      'editor' => 'tinymce',
+      'settings' => $full_settings,
+    ),
+    'filtered_html' => array(
+      'format' => 'filtered_html',
+      'editor' => 'tinymce',
+      'settings' => $filtered_settings,
+    ),
+    'plain_text' => array(
+      'format' => 'plain_text',
+      'editor' => '',
+      'settings' => '',
+    ),
+  );
+
+  foreach ($wysiwyg_config as $record) {
+    db_merge('wysiwyg')
+      ->key(array('format' => $record['format']))
+      ->fields(array(
+        'editor' => $record['editor'],
+        'settings' => serialize($record['settings']),
+      ))
+      ->execute();
+  }
+  wysiwyg_profile_cache_clear();
+  
+}
+
+function base_set_blocks() {
+  // Disable Bartik theme.
+  db_update('system')
+    ->fields(array('status' => 0))
+    ->condition('type', 'theme')
+    ->condition('name', 'bartik')
+    ->execute();
+  
+  db_update('system')
+    ->fields(array('status' => 1))
+    ->condition('type', 'theme')
+    ->condition('name', 'seven')
+    ->execute();
+
+  $default_theme = variable_get('theme_default', 'seven');
+  $admin_theme = 'rubik';
+  
+  // Enable some blocks.
+  $values = array(
+    array(
+      'module' => 'system',
+      'delta' => 'main',
+      'theme' => $default_theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'system',
+      'delta' => 'help',
+      'theme' => $default_theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'help',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'system',
+      'delta' => 'main',
+      'theme' => $admin_theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'content',
+      'pages' => '',
+      'cache' => -1,
+    ),
+    array(
+      'module' => 'system',
+      'delta' => 'help',
+      'theme' => $admin_theme,
+      'status' => 1,
+      'weight' => 0,
+      'region' => 'help',
+      'pages' => '',
+      'cache' => -1,
+    ),
+  );
+  $query = db_insert('block')->fields(array('module', 'delta', 'theme', 'status', 'weight', 'region', 'pages', 'cache'));
+  foreach ($values as $record) {
+    $query->values($record);
+  }
+  $query->execute();
+  
+  // Set default theme settings
+  variable_set('theme_rubik_settings', array(
+    'toggle_logo' => 1,
+    'toggle_name' => 1,
+    'toggle_slogan' => 0,
+    'toggle_node_user_picture' => 0,
+    'toggle_comment_user_picture' => 0,
+    'toggle_comment_user_verification' => 0,
+    'toggle_favicon' => 1,
+    'toggle_main_menu' => 1,
+    'toggle_secondary_menu' => 0,
+    'default_logo' => 0,
+    'logo_path' => 'profiles/base/logo.png',
+    'logo_upload' => '',
+    'default_favicon' => 1,
+    'favicon_path' => '',
+    'favicon_upload' => '',
+  ));
+}
+
+function base_set_fields_types() {
+   // Insert default pre-defined node types into the database
+  // documentation at: http://api.drupal.org/api/HEAD/function/hook_node_info.
+  $types = array(
+    array(
+      'type' => 'page',
+      'name' => st('Page'),
+      'base' => 'node_content',
+      'description' => st("Use <strong>basic pages</strong> for your static content, like a 'About us' page."),
+      'custom' => 1,
+      'modified' => 1,
+      'locked' => 0,
+    ),
+    array(
+      'type' => 'article',
+      'name' => st('Article'),
+      'base' => 'node_content',
+      'description' => st('Use <strong>articles</strong> for time-sensitive content like news, press releases or blog posts.'),
+      'custom' => 1,
+      'modified' => 1,
+      'locked' => 0,
+    ),
+    array(
+      'type' => 'block',
+      'name' => st('Block'),
+      'base' => 'node_content',
+      'description' => st('Use a <strong>block</strong> for small movable content like an address or trademark notice'),
+      'custom' => 1,
+      'modified' => 1,
+      'locked' => 0,
+    ),
+  );
+
+  foreach ($types as $type) {
+    $type = node_type_set_defaults($type);
+    node_type_save($type);
+    node_add_body_field($type);
+  }
+
+  // Create a default vocabulary named "Tags", enabled for the 'article' content type.
+  $description = st('Use tags to group articles on similar topics into categories.');
+  $help = st('Enter a comma-separated list of words to describe your content.');
+  $vocabulary = (object) array(
+    'name' => st('Tags'),
+    'description' => $description,
+    'machine_name' => 'tags',
+    'help' => $help,
+
+  );
+  taxonomy_vocabulary_save($vocabulary);
+
+  $field = array(
+    'field_name' => 'field_' . $vocabulary->machine_name,
+    'type' => 'taxonomy_term_reference',
+    // Set cardinality to unlimited for tagging.
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'settings' => array(
+      'allowed_values' => array(
+        array(
+          'vocabulary' => $vocabulary->machine_name,
+          'parent' => 0,
+        ),
+      ),
+    ),
+  );
+  field_create_field($field);
+
+  $instance = array(
+    'field_name' => 'field_' . $vocabulary->machine_name,
+    'entity_type' => 'node',
+    'label' => 'Tags',
+    'bundle' => 'article',
+    'description' => $vocabulary->help,
+    'widget' => array(
+      'type' => 'taxonomy_autocomplete',
+      'weight' => -4,
+    ),
+    'display' => array(
+      'default' => array(
+        'type' => 'taxonomy_term_reference_link',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'type' => 'taxonomy_term_reference_link',
+        'weight' => 10,
+      ),
+    ),
+  );
+  field_create_instance($instance);
+
+
+  // Create an image field named "Image", enabled for the 'article' content type.
+  // Many of the following values will be defaulted, they're included here as an illustrative examples.
+  // See http://api.drupal.org/api/function/field_create_field/7
+
+  $field = array(
+    'field_name' => 'field_image',
+    'type' => 'image',
+    'cardinality' => 1,
+    'locked' => FALSE,
+    'indexes' => array('fid' => array('fid')),
+    'settings' => array(
+      'uri_scheme' => 'public',
+      'default_image' => FALSE,
+    ),
+    'storage' => array(
+      'type' => 'field_sql_storage',
+      'settings' => array(),
+    ),
+  );
+  field_create_field($field);
+
+
+  // Many of the following values will be defaulted, they're included here as an illustrative examples.
+  // See http://api.drupal.org/api/function/field_create_instance/7
+  $instance = array(
+    'field_name' => 'field_image',
+    'entity_type' => 'node',
+    'label' => 'Image',
+    'bundle' => 'article',
+    'description' => st('Upload an image to go with this article.'),
+    'required' => FALSE,
+
+    'settings' => array(
+      'file_directory' => 'field/image',
+      'file_extensions' => 'png gif jpg jpeg',
+      'max_filesize' => '',
+      'max_resolution' => '',
+      'min_resolution' => '',
+      'alt_field' => TRUE,
+      'title_field' => '',
+    ),
+
+    'widget' => array(
+      'type' => 'image_image',
+      'settings' => array(
+        'progress_indicator' => 'throbber',
+        'preview_image_style' => 'thumbnail',
+      ),
+      'weight' => -1,
+    ),
+
+    'display' => array(
+      'default' => array(
+        'label' => 'hidden',
+        'type' => 'image',
+        'settings' => array('image_style' => 'large', 'image_link' => ''),
+        'weight' => -1,
+      ),
+      'teaser' => array(
+        'label' => 'hidden',
+        'type' => 'image',
+        'settings' => array('image_style' => 'medium', 'image_link' => 'content'),
+        'weight' => -1,
+      ),
+    ),
+  );
+  field_create_instance($instance);
+}
+
+

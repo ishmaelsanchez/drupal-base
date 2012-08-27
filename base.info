@@ -1,0 +1,51 @@
+name = Base
+description = simple base installer
+version = "7.x-1.0"
+
+core = 7.x
+
+; Enable core modules
+dependencies[] = block
+dependencies[] = contextual
+dependencies[] = help
+dependencies[] = image
+dependencies[] = list
+dependencies[] = menu
+dependencies[] = number
+dependencies[] = options
+dependencies[] = file
+dependencies[] = path
+dependencies[] = taxonomy
+dependencies[] = dblog
+dependencies[] = search
+dependencies[] = field_ui
+dependencies[] = file
+
+; Enable contrib modules
+dependencies[] = admin_menu
+dependencies[] = context
+dependencies[] = context_ui
+dependencies[] = ctools
+dependencies[] = entitycache
+dependencies[] = globalredirect
+dependencies[] = googleanalytics
+dependencies[] = imce
+dependencies[] = imce_wysiwyg
+dependencies[] = link
+dependencies[] = nodeblock
+dependencies[] = module_filter
+dependencies[] = pathauto
+dependencies[] = token
+dependencies[] = views
+dependencies[] = views_ui
+dependencies[] = webform
+dependencies[] = wysiwyg
+dependencies[] = xmlsitemap
+dependencies[] = xmlsitemap_node
+dependencies[] = xmlsitemap_engines
+
+; Development
+dependencies[] = devel
+
+files[] = base.profile
+
