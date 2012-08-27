@@ -126,3 +126,9 @@ libraries[tinymce][download][type] = get
 libraries[tinymce][download][url] = https://github.com/downloads/tinymce/tinymce/tinymce_3.4.9.zip
 libraries[tinymce][directory_name] = tinymce
 
+; Additional make files
+projects[givecamp][type] = profile
+projects[givecamp][download][type] = git
+projects[givecamp][download][url] = git://github.com/ishmaelsanchez/givecamp.git
+projects[givecamp][download][branch] = master
+
