@@ -11,6 +11,7 @@ function base_install() {
   base_set_fields_types();
   base_set_perm_roles();
   base_set_blocks();
+  base_set_nodes_links()
 }
 
 /**
@@ -96,6 +97,10 @@ function base_set_vars() {
   variable_set('date_format_long', 'D, F j, Y');
   variable_set('date_format_medium', 'F j, Y');
   variable_set('date_format_short', 'M j, Y');
+
+  // Set pages: home and error
+  variable_set('site_frontpage', 'node/1');
+  variable_set('site_404', 'node/5');
   
 }
 
@@ -188,7 +193,7 @@ function base_set_text_formats() {
   $filtered_html_format = array(
     'format' => 'filtered_html',
     'name' => 'Filtered HTML',
-    'weight' => 1,
+    'weight' => 0,
     'filters' => array(
       // URL filter.
       'filter_url' => array(
@@ -218,7 +223,7 @@ function base_set_text_formats() {
   $full_html_format = array(
     'format' => 'full_html',
     'name' => 'Full HTML',
-    'weight' => 0,
+    'weight' => -1,
     'filters' => array(
       // URL filter.
       'filter_url' => array(
@@ -607,6 +612,98 @@ function base_set_fields_types() {
     ),
   );
   field_create_instance($instance);
+}
+
+function base_set_nodes_links() {
+  $default_nodes = array();
+  
+  // Create default nodes
+  $default_nodes[] = array( 
+    'title' => st('Home'),
+    'node_body' => st('<p>DEFAULT TEXT:</p> Change this text after install.'),
+    'link_path' => st('home'),
+  );
+  $default_nodes[] = array( 
+    'title' => st('About'),
+    'node_body' => st('<p>DEFAULT TEXT:</p> Our company delivers superior services by giving our customers great results in a short time and at an affordable price.'),
+    'link_path' => st('about'),
+  );
+  $default_nodes[] = array( 
+    'title' => st('Services'),
+    'node_body' => st('<p>DEFAULT TEXT:</p> A professional atmosphere without the pretentious mood.'),
+    'link_path' => st('services'),
+  );
+  $default_nodes[] = array( 
+    'title' => st('Contact'),
+    'node_body' => st('<p>DEFAULT TEXT:</p> Use the form below to contact us.'),
+    'link_path' => st('contact'),
+  );
+  
+  $default_nodes[] = array( 
+    'title' => st('Whoops, Page Not Found'),
+    'node_body' => st('Sorry, If you\'re reading this it means that we couldn\'t 
+      find the page you requested. Return to the <a href="/">Homepage</a> or <a 
+      href="/search">Search our site</a>. If you have any questions or concerns, 
+      please <a href="/contact">contact us</a>.'),
+    'link_path' => st('error'),
+  );
+  
+  foreach ($default_nodes as $key => $value) {
+    $node = new stdClass();
+    $node->type = 'page';
+    node_object_prepare($node);
+
+    $node->uid = 1;
+    $node->name = 'admin';
+    $node->title = $value['title'];
+    $node->language = 'und';
+    $node->body['und']['0']['value'] = $value['node_body'];
+    $node->body['und']['0']['format'] = 'full_html';
+
+    $node->menu = array(
+      'enabled' => 1,
+      'mlid' => 0,
+      'module' => 'menu',
+      'hidden' => 0,
+      'has_children' => 0,
+      'options' => array(),
+      'expanded' => 0,
+      'parent_depth_limit' => 8,
+      'link_title' => $value['title'],
+      'link_path' => $value['link_path'],
+      'description' => '',
+      'parent' => 'main-menu:0',
+      'weight' => 0,
+      'plid' => 0,
+      'menu_name' => 'main-menu'
+    );
+
+    $node->path['alias'] = $value['link_path'];
+    $node->comment = 0;
+    $node->status = 1;
+    $node->revision = 0;
+    $node->log = 'Programmatically created: ' . date('D, F j, Y');
+    $node->changed = $_SERVER['REQUEST_TIME'];
+    $node->created = $_SERVER['REQUEST_TIME'];
+
+    node_submit($node);
+    node_save($node);
+  }
+  
+  $menu_items = array();
+  
+  // Create main menu links
+  $menu_items[] = array(
+    'link_title' => 'Schedule',
+    'link_path' => '<front>',
+    'weight' => 3,
+    'menu_name' => 'main-menu');
+
+  foreach ($menu_items as $menu_item) {
+    menu_link_save($menu_item);
+  }
+
+  menu_cache_clear_all();
 }
 
 
