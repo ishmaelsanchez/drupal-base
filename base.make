@@ -24,15 +24,6 @@ projects[devel][subdir] = "contrib"
 projects[backup_migrate][type] = "module"
 projects[backup_migrate][subdir] = "contrib"
 
-
-; Features =====================================================================
-projects[features][type] = "module"
-projects[features][subdir] = "contrib"
-
-projects[strongarm][type] = "module"
-projects[strongarm][subdir] = "contrib"
-
-
 ; Field related ================================================================
 projects[link][type] = "module"
 projects[link][subdir] = "contrib"
@@ -51,9 +42,6 @@ projects[menu_block][subdir] = "contrib"
 ; Other ========================================================================
 
 ; Social media
-projects[socialmedia][type] = module
-projects[socialmedia][subdir] = contrib
-
 projects[nodeblock][type] = "module"
 projects[nodeblock][subdir] = "contrib"
 
@@ -123,7 +111,7 @@ projects[tao][type] = "theme"
 
 ; Third party libraries ========================================================
 libraries[tinymce][download][type] = get
-libraries[tinymce][download][url] = https://github.com/downloads/tinymce/tinymce/tinymce_3.4.9.zip
+libraries[tinymce][download][url] = https://github.com/downloads/tinymce/tinymce/tinymce_3.5.7.zip
 libraries[tinymce][directory_name] = tinymce
 
 ; Additional make files

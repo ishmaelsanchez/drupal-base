@@ -3,12 +3,13 @@
 /**
  * Set default install profile.
  *
- */
+ * Using a patch of inherited profiles
 function system_form_install_select_profile_form_alter(&$form, $form_state) {
   // Hide default Drupal profiles
   unset($form['profile']['Standard']);
   unset($form['profile']['Minimal']);
 }
+ */
 
 /**
  * Implements hook_form_FORM_ID_alter().
