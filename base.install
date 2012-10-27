@@ -11,7 +11,7 @@ function base_install() {
   base_set_fields_types();
   base_set_perm_roles();
   base_set_blocks();
-  base_set_nodes_links()
+  base_set_nodes_links();
 }
 
 /**
