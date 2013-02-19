@@ -18,24 +18,34 @@ function base_install() {
  * Defines variables for nodes and contrib modules
  */
 function base_set_vars() {
-  // Default page not promoted and comments disabled.
-  variable_set('node_options_page', array('status'));
-  variable_set('comment_page', COMMENT_NODE_HIDDEN);
+$content_types = array(
+    'page', 'webform'
+  );
   
-  // Block and webform content not promoted and comments disabled.
-  variable_set('node_options_block', array('status'));
-  variable_set('comment_block', COMMENT_NODE_HIDDEN);
-  variable_set('comment_webform', COMMENT_NODE_HIDDEN);
+  // Do not promote or display date/author information, no comments
+  foreach ($content_types as $content_type) {
+    variable_set("node_options_{$content_type}", array('status'));
+    variable_set("node_submitted_{$content_type}", FALSE);
+    variable_set("comment_{$content_type}", COMMENT_NODE_HIDDEN);
+  }
 
-  // Default articles and webforms not promoted
-  variable_set('node_options_article', array('status'));
-  variable_set('node_options_webform', array('status'));
+  // Disable ability to add to main menu by default
+  $menu_types = array(
+    'article', 'webform'
+  );
+
+  // Set menu variables
+  foreach ($menu_types as $item) {
+    variable_set("menu_options_{$item}", array(''));
+    variable_set("menu_parent_{$item}", 'main-menu:0');
+  }
   
-  // Don't display date and author information page, block, webform nodes.
-  variable_set('node_submitted_page', FALSE);
-  variable_set('node_submitted_block', FALSE);
-  variable_set('node_submitted_webform', FALSE);
-
+  // Move menu menu, could be an issue with Foundation
+  variable_set('admin_menu_position_fixed', 1);
+  
+  // Enable nodeblock for block content type
+  variable_set('nodeblock_block', 1);
+  
   // Cache GA code by default
   variable_set('googleanalytics_cache', 1);
 
@@ -51,7 +61,7 @@ function base_set_vars() {
   // Set cron
   variable_set('cron_safe_threshold', '43200');
 
-  // Set search engines to submit to
+  // Set search engines to submit
   variable_set('xmlsitemap_engines_engines', array('bing', 'google'));
 
   // Set XML sitemap minimum
@@ -61,12 +71,20 @@ function base_set_vars() {
   variable_set('xmlsitemap_settings_node_page', array('status' => 1, 'priority' => 0.5));
   variable_set('xmlsitemap_settings_node_article', array('status' => 1, 'priority' => 0.5));
   
+  // IMCE access for manager roles
+  variable_set('imce_roles_profiles', array(
+    '3' => array(
+      'weight' => 0,
+      'public_pid' => 1,
+    ), 
+  ));
+  
   // Disable user register.
   variable_set('user_register', USER_REGISTER_ADMINISTRATORS_ONLY);
   
+  // Themes
   variable_set('admin_theme', 'rubik');
   variable_set('node_admin_theme', '1');
-  variable_set('theme_default', 'seven');
   
   // Add new date options to be set as vars below
   $values = array(
@@ -101,7 +119,6 @@ function base_set_vars() {
   // Set pages: home and error
   variable_set('site_frontpage', 'node/1');
   variable_set('site_404', 'node/5');
-  
 }
 
 /**
@@ -111,7 +128,6 @@ function base_set_perm_roles() {
   
   // MAKE Sure you aren't setting perms for disabled modules otherwise you get
   // Integrity constraint violation: 1048 Column 'module' cannot be null
-
 
   // Set perms for default roles
   user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, array('access content', 'search content'));
@@ -131,33 +147,6 @@ function base_set_perm_roles() {
     ->fields(array('uid' => 1, 'rid' => $admin_role->rid))
     ->execute();
   
-    // Create role for editors
-  $role = new stdClass();
-  $role->name = 'editor';
-  $role->weight = 2;
-  user_role_save($role);
-
-  $permissions = array(
-    'access administration menu',
-    'use text format filtered_html',
-    'access content overview',
-    'create article content',
-    'create block content',
-    'create page content',
-    'edit any article content',
-    'edit any page content',
-    'edit own article content',
-    'edit own block content',
-    'edit own page content',
-    'revert revisions',
-    'view own unpublished content',
-    'view revisions',
-    'view the administration theme',
-    'access own webform results',
-    'access own webform submissions',
-  );
-  user_role_grant_permissions($role->rid, $permissions);
-  
   // Create manager role with some sensible defaults
   $manager_role = new stdClass();
   $manager_role->name = 'manager';
@@ -169,12 +158,10 @@ function base_set_perm_roles() {
     'use text format full_html',
     'access content overview',
     'create article content',
-    'create block content',
     'create page content',
     'edit any article content',
     'edit any page content',
     'edit own article content',
-    'edit own block content',
     'edit own page content',
     'revert revisions',
     'view own unpublished content',
@@ -365,7 +352,6 @@ function base_set_text_formats() {
       ->execute();
   }
   wysiwyg_profile_cache_clear();
-  
 }
 
 function base_set_blocks() {
@@ -433,25 +419,6 @@ function base_set_blocks() {
     $query->values($record);
   }
   $query->execute();
-  
-  // Set default theme settings
-  variable_set('theme_rubik_settings', array(
-    'toggle_logo' => 1,
-    'toggle_name' => 1,
-    'toggle_slogan' => 0,
-    'toggle_node_user_picture' => 0,
-    'toggle_comment_user_picture' => 0,
-    'toggle_comment_user_verification' => 0,
-    'toggle_favicon' => 1,
-    'toggle_main_menu' => 1,
-    'toggle_secondary_menu' => 0,
-    'default_logo' => 0,
-    'logo_path' => 'profiles/base/logo.png',
-    'logo_upload' => '',
-    'default_favicon' => 1,
-    'favicon_path' => '',
-    'favicon_upload' => '',
-  ));
 }
 
 function base_set_fields_types() {
@@ -670,7 +637,6 @@ function base_set_nodes_links() {
       'expanded' => 0,
       'parent_depth_limit' => 8,
       'link_title' => $value['title'],
-      'link_path' => $value['link_path'],
       'description' => '',
       'parent' => 'main-menu:0',
       'weight' => 0,
@@ -678,7 +644,6 @@ function base_set_nodes_links() {
       'menu_name' => 'main-menu'
     );
 
-    $node->path['alias'] = $value['link_path'];
     $node->comment = 0;
     $node->status = 1;
     $node->revision = 0;

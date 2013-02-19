@@ -8,14 +8,9 @@ api = 2
 projects[admin_menu][type] = "module"
 projects[admin_menu][subdir] = "contrib"
 
-
 ; Ctool/Context ================================================================
 projects[ctools][type] = "module"
 projects[ctools][subdir] = "contrib"
-
-projects[context][type] = "module"
-projects[context][subdir] = "contrib"
-
 
 ; Development ==================================================================
 projects[devel][type] = "module"
@@ -32,18 +27,8 @@ projects[entity][type] = "module"
 projects[entity][subdir] = "contrib"
 
 ; Menu =========================================================================
-projects[nice_menus][type] = "module"
-projects[nice_menus][subdir] = "contrib"
-
-projects[menu_block][type] = "module"
-projects[menu_block][subdir] = "contrib"
-
 
 ; Other ========================================================================
-
-; Social media
-projects[nodeblock][type] = "module"
-projects[nodeblock][subdir] = "contrib"
 
 projects[token][type] = "module"
 projects[token][subdir] = "contrib"
@@ -67,16 +52,18 @@ projects[mollom][subdir] = "contrib"
 ; SEO ==========================================================================
 projects[globalredirect][type] = "module"
 projects[globalredirect][subdir] = "contrib"
+
 projects[google_analytics][type] = "module"
 projects[google_analytics][subdir] = "contrib"
-;
-;projects[metatag][type] = "modules"
-;projects[metatag][subdir] = "contrib"
+
+projects[metatag][type] = "modules"
+projects[metatag][subdir] = "contrib"
+
 projects[pathauto][type] = "module"
 projects[pathauto][subdir] = "contrib"
+
 projects[xmlsitemap][type] = "module"
 projects[xmlsitemap][subdir] = "contrib"
-
 
 ; Views ========================================================================
 projects[views][type] = "module"
@@ -86,7 +73,6 @@ projects[views][subdir] = "contrib"
 ; projects[views_bulk_operations][subdir] = "contrib"
 ; projects[views_slideshow][type] = "module"
 ; projects[views_slideshow][subdir] = "contrib"
-
 
 ; Webform ======================================================================
 projects[webform][type] = "module"
@@ -111,12 +97,12 @@ projects[tao][type] = "theme"
 
 ; Third party libraries ========================================================
 libraries[tinymce][download][type] = get
-libraries[tinymce][download][url] = https://github.com/downloads/tinymce/tinymce/tinymce_3.5.7.zip
+libraries[tinymce][download][url] = https://github.com/downloads/tinymce/tinymce/tinymce_3.5.8.zip
 libraries[tinymce][directory_name] = tinymce
 
 ; Additional make files
 projects[givecamp][type] = profile
 projects[givecamp][download][type] = git
-projects[givecamp][download][url] = git://github.com/ishmaelsanchez/givecamp.git
+projects[givecamp][download][url] = git://github.com/ishmaelsanchez/drupal-base.git
 projects[givecamp][download][branch] = master
 

@@ -1,5 +1,5 @@
 name = Base
-description = simple base installer
+description = Simple base installer
 version = "7.x-1.0"
 
 core = 7.x
@@ -23,8 +23,6 @@ dependencies[] = file
 
 ; Enable contrib modules
 dependencies[] = admin_menu
-dependencies[] = context
-dependencies[] = context_ui
 dependencies[] = ctools
 dependencies[] = entitycache
 dependencies[] = globalredirect
@@ -32,7 +30,7 @@ dependencies[] = googleanalytics
 dependencies[] = imce
 dependencies[] = imce_wysiwyg
 dependencies[] = link
-dependencies[] = nodeblock
+dependencies[] = metatag
 dependencies[] = module_filter
 dependencies[] = pathauto
 dependencies[] = token
@@ -48,4 +46,3 @@ dependencies[] = xmlsitemap_engines
 dependencies[] = devel
 
 files[] = base.profile
-
