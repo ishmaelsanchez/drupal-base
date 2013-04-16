@@ -94,15 +94,8 @@ projects[imce_wysiwyg][subdir] = "contrib"
 projects[rubik][type] = "theme"
 projects[tao][type] = "theme"
 
-
 ; Third party libraries ========================================================
 libraries[tinymce][download][type] = get
 libraries[tinymce][download][url] = https://github.com/downloads/tinymce/tinymce/tinymce_3.5.8.zip
 libraries[tinymce][directory_name] = tinymce
-
-; Additional make files
-projects[givecamp][type] = profile
-projects[givecamp][download][type] = git
-projects[givecamp][download][url] = git://github.com/ishmaelsanchez/drupal-base.git
-projects[givecamp][download][branch] = master
 
