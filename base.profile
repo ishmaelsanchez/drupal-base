@@ -1,17 +1,13 @@
 <?php
 
 /**
- * Set default install profile.
- *
- * Using a patch of inherited profiles
- *
- * @param type $form
- * @param type $form_state 
+ * Implements hook_install_tasks_alter().
  */
-function system_form_install_select_profile_form_alter(&$form, $form_state) {
-  // Hide default Drupal profiles
-  unset($form['profile']['Standard']);
-  unset($form['profile']['Minimal']);
+function base_install_tasks_alter(&$tasks, $install_state) {
+  global $install_state;
+ 
+  // Skip profile selection step 
+  $tasks['install_select_profile']['display'] = FALSE;
 }
 
 /**
@@ -31,14 +27,34 @@ function base_form_install_configure_form_alter(&$form, $form_state) {
   // Date/time settings
   $form['server_settings']['site_default_country']['#default_value'] = 'US';
   $form['server_settings']['date_default_timezone']['#default_value'] = 'America/Los Angeles';
-  
-  // Many modules set messages during installation we reset them
-  drupal_get_messages('status');
-  drupal_get_messages('warning');
 
   // Opt out of e-mail notifications 
   $form['update_notifications']['update_status_module']["#default_value"]['1'] = '0';
- 
+
+  // Get rid of messages and extra notifications
+  base_clean_up();
+}
+
+/**
+ * Flush cache, run cron, and other clean up
+ */
+function base_clean_up() {
+  
+  // Many modules set messages during installation we reset them
+  drupal_get_messages('status', TRUE);
+  drupal_get_messages('completed', TRUE);
+  drupal_get_messages('warning');
+  
+  // Disable Bartik theme
+  db_update('system')
+    ->fields(array('status' => 0))
+    ->condition('type', 'theme')
+    ->condition('name', 'bartik')
+    ->execute();
+  
+  // Run cron and flush cache for good measure
+  drupal_cron_run();
+  drupal_flush_all_caches();
 }
 
 /**

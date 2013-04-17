@@ -19,7 +19,7 @@ function base_install() {
  */
 function base_set_vars() {
 $content_types = array(
-    'page', 'webform'
+    'page', 'block', 'webform'
   );
   
   // Do not promote or display date/author information, no comments
@@ -31,7 +31,7 @@ $content_types = array(
 
   // Disable ability to add to main menu by default
   $menu_types = array(
-    'article', 'webform'
+    'article', 'block', 'webform'
   );
 
   // Set menu variables

@@ -36,6 +36,9 @@ projects[token][subdir] = "contrib"
 projects[module_filter][type] = "module"
 projects[module_filter][subdir] = "contrib"
 
+projects[nodeblock][type] = "module"
+projects[nodeblock][subdir] = "contrib"
+
 ; Performance ==================================================================
 projects[entitycache][type] = "module"
 projects[entitycache][subdir] = "contrib"
@@ -98,4 +101,3 @@ projects[tao][type] = "theme"
 libraries[tinymce][download][type] = get
 libraries[tinymce][download][url] = https://github.com/downloads/tinymce/tinymce/tinymce_3.5.8.zip
 libraries[tinymce][directory_name] = tinymce
-
