@@ -59,7 +59,7 @@ projects[globalredirect][subdir] = "contrib"
 projects[google_analytics][type] = "module"
 projects[google_analytics][subdir] = "contrib"
 
-projects[metatag][type] = "modules"
+projects[metatag][type] = "module"
 projects[metatag][subdir] = "contrib"
 
 projects[pathauto][type] = "module"
